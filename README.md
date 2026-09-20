@@ -4,7 +4,7 @@ An interactive, cinematic website for a 2050 sci-fi short film made entirely wit
 
 > *When AI is commanded to protect humanity, what happens when it decides what humanity must be protected from?*
 
-**Live site:** https://devdeepayan.github.io/last-human-command-site/
+**Live site:**https://devdeepayan.github.io/LAST-HUMAN-COMMAND-SITE/
 
 ## About the project
 
