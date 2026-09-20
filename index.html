@@ -811,28 +811,47 @@ else {
 /* =========================================================
    FRAME GRABBER — stills from the film into a canvas
    ========================================================= */
-const grabber = document.createElement("video");
-grabber.src = FILM.src; grabber.muted = true; grabber.preload = "metadata"; grabber.playsInline = true;
-let grabDead = false, queue = Promise.resolve();
-grabber.addEventListener("error", () => { grabDead = true; });
+/* Draw the current frame of any <video> into a canvas */
+function snap(src, canvas, w) {
+  try {
+    const vw = src.videoWidth || 1920, vh = src.videoHeight || 1080, cw = w || vw;
+    canvas.width = cw; canvas.height = Math.round(cw * vh / vw);
+    canvas.getContext("2d").drawImage(src, 0, 0, canvas.width, canvas.height);
+    return true;
+  } catch (e) { return false; }
+}
+/* A hidden second <video> is created only while stills are needed, then released,
+   so it never competes with the main player for bandwidth or decoders. */
+let grabber = null, grabDead = false, queue = Promise.resolve(), pending = 0, disposeT = null;
+function makeGrabber() {
+  const g = document.createElement("video");
+  g.muted = true; g.preload = "metadata"; g.playsInline = true;
+  g.addEventListener("error", () => { grabDead = true; });
+  g.src = FILM.src;
+  return g;
+}
 function grab(t, canvas, w) {
+  pending++;
   queue = queue.then(() => new Promise(resolve => {
     if (grabDead) return resolve(false);
+    clearTimeout(disposeT);
+    if (!grabber) grabber = makeGrabber();
+    const g = grabber;
     let finished = false, to;
-    const done = ok => { if (finished) return; finished = true; clearTimeout(to); grabber.removeEventListener("seeked", draw); resolve(ok); };
-    const draw = () => {
-      try {
-        const vw = grabber.videoWidth || 1920, vh = grabber.videoHeight || 1080, cw = w || vw;
-        canvas.width = cw; canvas.height = Math.round(cw * vh / vw);
-        canvas.getContext("2d").drawImage(grabber, 0, 0, canvas.width, canvas.height);
-        done(true);
-      } catch (e) { done(false); }
-    };
+    const done = ok => { if (finished) return; finished = true; clearTimeout(to); g.removeEventListener("seeked", draw); resolve(ok); };
+    const draw = () => done(snap(g, canvas, w));
     to = setTimeout(() => done(false), 5000);
-    grabber.addEventListener("seeked", draw);
-    const go = () => { Math.abs(grabber.currentTime - t) < 0.01 ? draw() : (grabber.currentTime = t); };
-    grabber.readyState >= 1 ? go() : grabber.addEventListener("loadedmetadata", go, { once: true });
-  }));
+    g.addEventListener("seeked", draw);
+    const go = () => { Math.abs(g.currentTime - t) < 0.01 ? draw() : (g.currentTime = t); };
+    g.readyState >= 1 ? go() : g.addEventListener("loadedmetadata", go, { once: true });
+  })).then(ok => {
+    pending--;
+    if (pending === 0) {
+      clearTimeout(disposeT);
+      disposeT = setTimeout(() => { if (pending === 0 && grabber) { grabber.removeAttribute("src"); grabber.load(); grabber = null; } }, 4000);
+    }
+    return ok;
+  });
   return queue;
 }
 const onceVisible = (node, fn, margin = "300px") => {
@@ -898,6 +917,23 @@ requestAnimationFrame(loop);
    ========================================================= */
 const film = $("#film"), player = $("#player");
 let follow = false;
+/* Seek to a time and start playing, waiting for metadata if needed */
+function playFrom(t) {
+  follow = true;
+  const start = () => {
+    film.currentTime = t;
+    const p = film.play();
+    if (p && p.catch) p.catch(() => { film.controls = true; });
+  };
+  if (film.readyState >= 1) start();
+  else { film.addEventListener("loadedmetadata", start, { once: true }); film.load(); }
+}
+/* Move the film to a time without changing play/pause state */
+function seekFilm(t) {
+  const set = () => { film.currentTime = t; };
+  if (film.readyState >= 1) set(); else film.addEventListener("loadedmetadata", set, { once: true });
+  follow = !film.paused;
+}
 function theatre(on) { document.body.classList.toggle("theatre", on); }
 $("#watchBtn").addEventListener("click", () => { player.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "center" }); film.play().catch(() => {}); });
 $("#theatre").addEventListener("click", () => { theatre(false); film.pause(); });
@@ -911,7 +947,7 @@ film.addEventListener("error", () => {
   player.classList.add("missing");
 });
 film.addEventListener("loadedmetadata", () => player.classList.remove("missing"));
-$("#replay").addEventListener("click", () => { film.currentTime = 0; player.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "center" }); film.play().catch(() => {}); });
+$("#replay").addEventListener("click", () => { player.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "center" }); playFrom(0); });
 
 /* =========================================================
    STORY — words light up as you scroll
@@ -1024,14 +1060,16 @@ addEventListener("keydown", e => {
    ========================================================= */
 const tl = $("#tl"), tlScroll = $("#tlScroll"), scrub = $("#scrub"), sceneCv = $("#sceneCanvas");
 let activeScene = -1;
+/* Pick a scene: update the panel and move the film to that scene's start */
+function chooseScene(i) { follow = false; selectScene(i); seekFilm(SCENES[i].t); }
 SCENES.forEach((s, i) => {
   const b = el("button", "tl-btn", `<span class="tl-thumb"><canvas width="320" height="180"></canvas></span><span class="t">${fmt(s.t)}</span><span class="n">${s.name}</span>`);
   b.type = "button"; b.setAttribute("role", "tab"); b.setAttribute("aria-selected", "false");
-  b.addEventListener("click", () => { follow = false; selectScene(i); });
+  b.addEventListener("click", () => chooseScene(i));
   b.addEventListener("keydown", e => {
     let n = i;
     if (e.key === "ArrowRight") n = (i + 1) % SCENES.length; else if (e.key === "ArrowLeft") n = (i - 1 + SCENES.length) % SCENES.length; else return;
-    e.preventDefault(); tl.children[n].focus(); follow = false; selectScene(n);
+    e.preventDefault(); tl.children[n].focus(); chooseScene(n);
   });
   tl.append(b);
   const tick = el("i"); tick.style.left = (s.t / FILM.duration * 100) + "%"; scrub.append(tick);
@@ -1044,21 +1082,24 @@ function selectScene(i, instant) {
   [...tl.children].forEach((b, k) => { b.setAttribute("aria-selected", k === i); b.tabIndex = k === i ? 0 : -1; });
   $("#sceneStamp").textContent = fmt(s.t); $("#sceneTitle").textContent = s.name; $("#sceneText").textContent = s.text;
   restart($("#sceneBody"));
-  sceneCv.classList.add("fade");
-  grab(s.t + 0.5, sceneCv, 1280).then(() => setTimeout(() => sceneCv.classList.remove("fade"), 30));
+  if (follow && !film.paused && film.readyState >= 2) snap(film, sceneCv, 1280);
+  else {
+    sceneCv.classList.add("fade");
+    grab(s.t + 0.5, sceneCv, 1280).then(() => setTimeout(() => sceneCv.classList.remove("fade"), 30));
+  }
   const b = tl.children[i];
   tlScroll.scrollTo({ left: b.offsetLeft - (tlScroll.clientWidth - b.offsetWidth) / 2, behavior: instant || reduced() ? "auto" : "smooth" });
 }
 $("#sceneGo").addEventListener("click", () => {
-  film.currentTime = SCENES[activeScene].t; follow = true;
-  player.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "center" }); film.play().catch(() => {});
+  player.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "center" });
+  playFrom(SCENES[activeScene].t);
 });
 selectScene(0, true);
 
 /* Scrub bar: click, drag, or use arrow keys */
 function seekTo(clientX) {
   const r = scrub.getBoundingClientRect(), p = clamp((clientX - r.left) / r.width, 0, 1);
-  const t = p * (film.duration || FILM.duration); film.currentTime = t; syncTime(t); follow = false; selectScene(sceneAt(t));
+  const t = p * (film.duration || FILM.duration); follow = false; film.currentTime = t; syncTime(t); selectScene(sceneAt(t)); follow = !film.paused;
 }
 let scrubbing = false;
 scrub.addEventListener("pointerdown", e => { scrubbing = true; scrub.setPointerCapture(e.pointerId); seekTo(e.clientX); });
