@@ -407,6 +407,19 @@ footer { padding: 2.5rem 0 3.5rem; border-top: 1px solid var(--line); color: var
 footer p { margin: 0 auto; }
 
 /* =========================================================
+   17b. PLAYBACK SAFETY + LITE MODE (phones and tablets)
+   ========================================================= */
+#film-section { z-index: 60; }   /* keeps the player above the theatre dimmer */
+.player.panel { -webkit-backdrop-filter: none; backdrop-filter: none; background: #0a0f16; }   /* blur behind video can render it black */
+body.theatre .grain, body.theatre .vignette { display: none; }
+@media (pointer: coarse), (max-width: 720px) {
+  .grain, .vignette, .spot { display: none; }
+  .panel { -webkit-backdrop-filter: none; backdrop-filter: none; background: #0d141d; }
+  .site-header.scrolled { -webkit-backdrop-filter: none; backdrop-filter: none; background: rgba(5, 7, 10, .96); }
+  .hero-bg canvas { animation: none; }
+}
+
+/* =========================================================
    18. REDUCED MOTION
    ========================================================= */
 html[data-motion="reduced"] { scroll-behavior: auto; }
@@ -422,7 +435,7 @@ html[data-motion="reduced"] .story-lead .w { opacity: 1; }
 <div class="grain" aria-hidden="true"></div>
 <div class="vignette" aria-hidden="true"></div>
 <div class="spot" id="spot" aria-hidden="true"></div>
-<div class="theatre" id="theatre" aria-hidden="true">Click anywhere or press Esc to leave theatre mode</div>
+<div class="theatre" id="theatre" aria-hidden="true">Click anywhere or press Esc to bring the page back</div>
 
 <!-- INTRO -->
 <div class="intro" id="intro" aria-hidden="true">
@@ -936,8 +949,8 @@ function seekFilm(t) {
 }
 function theatre(on) { document.body.classList.toggle("theatre", on); }
 $("#watchBtn").addEventListener("click", () => { player.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "center" }); film.play().catch(() => {}); });
-$("#theatre").addEventListener("click", () => { theatre(false); film.pause(); });
-film.addEventListener("play", () => { if (!reduced()) theatre(true); follow = true; });
+$("#theatre").addEventListener("click", () => theatre(false));
+film.addEventListener("play", () => { if (!reduced() && !isTouch) theatre(true); follow = true; });
 film.addEventListener("pause", () => theatre(false));
 film.addEventListener("ended", () => theatre(false));
 film.addEventListener("error", () => {
@@ -1051,7 +1064,7 @@ function stepLb(d) { lbIdx = (lbIdx + d + WORLD.length) % WORLD.length; drawLb()
 $("#lbX").onclick = closeLb; $("#lbP").onclick = () => stepLb(-1); $("#lbN").onclick = () => stepLb(1);
 lb.addEventListener("click", e => { if (e.target === lb) closeLb(); });
 addEventListener("keydown", e => {
-  if (e.key === "Escape") { closeLb(); if (document.body.classList.contains("theatre")) { theatre(false); film.pause(); } }
+  if (e.key === "Escape") { closeLb(); theatre(false); }
   if (lb.classList.contains("open")) { if (e.key === "ArrowRight") stepLb(1); if (e.key === "ArrowLeft") stepLb(-1); }
 });
 
