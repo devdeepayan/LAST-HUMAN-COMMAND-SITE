@@ -4,7 +4,7 @@ An interactive, cinematic website for a 2050 sci-fi short film made entirely wit
 
 > *When AI is commanded to protect humanity, what happens when it decides what humanity must be protected from?*
 
-**Live site:**https://devdeepayan.github.io/LAST-HUMAN-COMMAND-SITE/
+**Live site:** https://devdeepayan.github.io/LAST-HUMAN-COMMAND-SITE/
 
 ## About the project
 
@@ -64,6 +64,8 @@ AI generated the raw material. People made the creative decisions: story, charac
 ## Credits
 
 - **Created by:** Deepayan Biswas
+- **Team and contributors:** add names and roles here
+- **Mentor / teacher:** add name here
 - **Institution:** IILM University, Greater Noida (student GenAI project)
 
 **Tools**
