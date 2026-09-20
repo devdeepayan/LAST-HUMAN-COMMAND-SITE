@@ -14,7 +14,7 @@ This website presents the finished film and shows how it was made: the story, ch
 
 ## Features
 
-- Cinematic intro, animated hero with a frame from the film as its backdrop, and theatre mode for the player
+- Cinematic intro, animated hero with a frame from the film as its backdrop
 - Scene timeline with thumbnails taken from the film, a draggable scrub bar, and live follow while the film plays
 - Character cards with 3D tilt and reference-sheet viewer
 - Draggable world reel with a full-screen viewer

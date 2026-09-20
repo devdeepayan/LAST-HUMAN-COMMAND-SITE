@@ -177,7 +177,7 @@ section { padding: clamp(4.5rem, 10vw, 8rem) 0; border-top: 1px solid var(--line
 @keyframes cue { 0% { transform: scaleY(0); } 50% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
 
 /* =========================================================
-   8. FILM PLAYER + THEATRE MODE
+   8. FILM PLAYER
    ========================================================= */
 #film-section { padding-top: clamp(3rem, 6vw, 5rem); }
 .player { position: relative; z-index: 60; overflow: hidden; padding: 0; transition: box-shadow .8s; }
@@ -185,13 +185,15 @@ section { padding: clamp(4.5rem, 10vw, 8rem) 0; border-top: 1px solid var(--line
 .player-fallback { position: absolute; inset: 0; display: none; place-items: center; text-align: center; padding: 2rem; background: var(--deep); color: var(--dim); }
 .player.missing .player-fallback { display: grid; }
 .readout { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: .8rem 1.1rem; border-top: 1px solid var(--line); font-size: .9rem; color: var(--dim); }
+.readout { align-items: center; }
+.fs { font: 500 .85rem var(--body); color: var(--ice); background: transparent; border: 1px solid var(--line-strong); border-radius: 2px; padding: .4rem .8rem; cursor: pointer; transition: background .2s; }
+.fs:hover { background: rgba(108, 184, 255, .12); }
+.player:fullscreen { display: flex; flex-direction: column; justify-content: center; background: #000; border: 0; border-radius: 0; }
+.player:fullscreen video { flex: 1; min-height: 0; aspect-ratio: auto; object-fit: contain; }
+.player:-webkit-full-screen { display: flex; flex-direction: column; justify-content: center; background: #000; border: 0; border-radius: 0; }
+.player:-webkit-full-screen video { flex: 1; min-height: 0; aspect-ratio: auto; object-fit: contain; }
 .readout strong { color: var(--ice); font-weight: 500; }
 .readout .tc { font-variant-numeric: tabular-nums; }
-.theatre { display: none; }
-main > section, footer { transition: opacity .7s; }
-body.theatre main > section:not(#film-section), body.theatre footer { opacity: .12; }
-body.theatre .site-header { opacity: .25; }
-body.theatre .player { box-shadow: 0 0 140px rgba(108, 184, 255, .28); }
 
 /* =========================================================
    9. STORY
@@ -413,7 +415,6 @@ footer p { margin: 0 auto; }
    ========================================================= */
 #film-section { z-index: 95; }   /* film sits above grain and vignette so they never touch the video */
 .player.panel { -webkit-backdrop-filter: none; backdrop-filter: none; background: #0a0f16; }   /* blur behind video can render it black */
-body.theatre .grain, body.theatre .vignette { display: none; }
 @media (pointer: coarse), (max-width: 720px) {
   .grain, .vignette, .spot { display: none; }
   .panel { -webkit-backdrop-filter: none; backdrop-filter: none; background: #0d141d; }
@@ -494,6 +495,7 @@ html[data-motion="reduced"] .story-lead .w { opacity: 1; }
       <div class="readout">
         <span>Now playing: <strong id="nowScene">Megacity</strong></span>
         <span class="tc"><span id="tcNow">00:00</span> / 01:05</span>
+        <button class="fs" id="fsBtn" type="button" aria-label="Toggle fullscreen">Fullscreen</button>
       </div>
     </div>
   </div>
@@ -927,7 +929,7 @@ function loop() {
 requestAnimationFrame(loop);
 
 /* =========================================================
-   FILM PLAYER + THEATRE MODE
+   FILM PLAYER
    ========================================================= */
 const film = $("#film"), player = $("#player");
 let follow = false;
@@ -948,14 +950,8 @@ function seekFilm(t) {
   if (film.readyState >= 1) set(); else film.addEventListener("loadedmetadata", set, { once: true });
   follow = !film.paused;
 }
-let theatreAt = 0;
-function theatre(on) { if (on) theatreAt = performance.now(); document.body.classList.toggle("theatre", on); }
 $("#watchBtn").addEventListener("click", () => { player.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "center" }); film.play().catch(() => {}); });
-/* click anywhere outside the player to bring the page back */
-document.addEventListener("click", e => { if (document.body.classList.contains("theatre") && !player.contains(e.target) && performance.now() - theatreAt > 500) theatre(false); });
-film.addEventListener("play", () => { if (!reduced() && !isTouch) theatre(true); follow = true; });
-film.addEventListener("pause", () => theatre(false));
-film.addEventListener("ended", () => theatre(false));
+film.addEventListener("play", () => { follow = true; });
 film.addEventListener("error", () => {
   const code = film.error ? film.error.code : "?";
   const why = { 1: "loading was aborted", 2: "a network error occurred", 3: "the file could not be decoded", 4: "the file is missing or its format is not supported" }[code] || "unknown error";
@@ -963,6 +959,17 @@ film.addEventListener("error", () => {
   player.classList.add("missing");
 });
 film.addEventListener("loadedmetadata", () => player.classList.remove("missing"));
+/* Fullscreen button: uses the browser's own fullscreen, no overlay layers */
+const fsBtn = $("#fsBtn");
+const fsElement = () => document.fullscreenElement || document.webkitFullscreenElement;
+fsBtn.addEventListener("click", () => {
+  if (fsElement()) { (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+  const req = player.requestFullscreen || player.webkitRequestFullscreen;
+  if (req) req.call(player);
+  else if (film.webkitEnterFullscreen) film.webkitEnterFullscreen();   /* iPhone Safari */
+});
+["fullscreenchange", "webkitfullscreenchange"].forEach(ev => document.addEventListener(ev, () => { fsBtn.textContent = fsElement() ? "Exit fullscreen" : "Fullscreen"; }));
+
 $("#replay").addEventListener("click", () => { player.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "center" }); playFrom(0); });
 
 /* =========================================================
@@ -1067,7 +1074,7 @@ function stepLb(d) { lbIdx = (lbIdx + d + WORLD.length) % WORLD.length; drawLb()
 $("#lbX").onclick = closeLb; $("#lbP").onclick = () => stepLb(-1); $("#lbN").onclick = () => stepLb(1);
 lb.addEventListener("click", e => { if (e.target === lb) closeLb(); });
 addEventListener("keydown", e => {
-  if (e.key === "Escape") { closeLb(); theatre(false); }
+  if (e.key === "Escape") closeLb();
   if (lb.classList.contains("open")) { if (e.key === "ArrowRight") stepLb(1); if (e.key === "ArrowLeft") stepLb(-1); }
 });
 
