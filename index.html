@@ -94,7 +94,7 @@ section { padding: clamp(4.5rem, 10vw, 8rem) 0; border-top: 1px solid var(--line
 .spot {
   position: fixed; left: 0; top: 0; width: 640px; height: 640px; margin: -320px 0 0 -320px; border-radius: 50%;
   background: radial-gradient(circle, rgba(108, 184, 255, .12), transparent 62%);
-  pointer-events: none; z-index: 1; mix-blend-mode: screen; opacity: 0; transition: opacity .5s; will-change: transform;
+  pointer-events: none; z-index: 1; opacity: 0; transition: opacity .5s; will-change: transform;
 }
 .spot.on { opacity: 1; }
 .progress { position: fixed; top: 0; left: 0; width: 100%; height: 2px; z-index: 120; transform-origin: 0 0; transform: scaleX(0); background: linear-gradient(90deg, var(--blue), var(--ice)); }
@@ -121,7 +121,7 @@ section { padding: clamp(4.5rem, 10vw, 8rem) 0; border-top: 1px solid var(--line
 /* =========================================================
    5. HEADER
    ========================================================= */
-.site-header { position: fixed; inset: 0 0 auto 0; z-index: 50; transition: background .4s, border-color .4s; border-bottom: 1px solid transparent; }
+.site-header { position: fixed; inset: 0 0 auto 0; z-index: 100; transition: background .4s, border-color .4s, opacity .7s; border-bottom: 1px solid transparent; }
 .site-header.scrolled { background: rgba(5, 7, 10, .82); border-color: var(--line); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
 .site-header .wrap { display: flex; align-items: center; gap: 1.5rem; height: 3.6rem; }
 .brand { font: 800 1.3rem/1 var(--display); letter-spacing: .08em; text-decoration: none; color: var(--ink); white-space: nowrap; }
@@ -187,8 +187,10 @@ section { padding: clamp(4.5rem, 10vw, 8rem) 0; border-top: 1px solid var(--line
 .readout { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: .8rem 1.1rem; border-top: 1px solid var(--line); font-size: .9rem; color: var(--dim); }
 .readout strong { color: var(--ice); font-weight: 500; }
 .readout .tc { font-variant-numeric: tabular-nums; }
-.theatre { position: fixed; inset: 0; z-index: 55; background: rgba(2, 3, 5, .93); opacity: 0; pointer-events: none; transition: opacity .7s; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 1.2rem; color: #566676; font-size: .85rem; }
-body.theatre .theatre { opacity: 1; pointer-events: auto; cursor: pointer; }
+.theatre { display: none; }
+main > section, footer { transition: opacity .7s; }
+body.theatre main > section:not(#film-section), body.theatre footer { opacity: .12; }
+body.theatre .site-header { opacity: .25; }
 body.theatre .player { box-shadow: 0 0 140px rgba(108, 184, 255, .28); }
 
 /* =========================================================
@@ -409,7 +411,7 @@ footer p { margin: 0 auto; }
 /* =========================================================
    17b. PLAYBACK SAFETY + LITE MODE (phones and tablets)
    ========================================================= */
-#film-section { z-index: 60; }   /* keeps the player above the theatre dimmer */
+#film-section { z-index: 95; }   /* film sits above grain and vignette so they never touch the video */
 .player.panel { -webkit-backdrop-filter: none; backdrop-filter: none; background: #0a0f16; }   /* blur behind video can render it black */
 body.theatre .grain, body.theatre .vignette { display: none; }
 @media (pointer: coarse), (max-width: 720px) {
@@ -435,7 +437,6 @@ html[data-motion="reduced"] .story-lead .w { opacity: 1; }
 <div class="grain" aria-hidden="true"></div>
 <div class="vignette" aria-hidden="true"></div>
 <div class="spot" id="spot" aria-hidden="true"></div>
-<div class="theatre" id="theatre" aria-hidden="true">Click anywhere or press Esc to bring the page back</div>
 
 <!-- INTRO -->
 <div class="intro" id="intro" aria-hidden="true">
@@ -487,7 +488,7 @@ html[data-motion="reduced"] .story-lead .w { opacity: 1; }
 <!-- ================= FILM ================= -->
 <section id="film-section" aria-label="The film">
   <div class="wrap">
-    <div class="player panel rv" id="player">
+    <div class="player panel" id="player">
       <video id="film" controls preload="metadata" playsinline src="assets/film-final.mp4"></video>
       <div class="player-fallback"><p id="fallbackMsg">The video could not be loaded.</p></div>
       <div class="readout">
@@ -947,9 +948,11 @@ function seekFilm(t) {
   if (film.readyState >= 1) set(); else film.addEventListener("loadedmetadata", set, { once: true });
   follow = !film.paused;
 }
-function theatre(on) { document.body.classList.toggle("theatre", on); }
+let theatreAt = 0;
+function theatre(on) { if (on) theatreAt = performance.now(); document.body.classList.toggle("theatre", on); }
 $("#watchBtn").addEventListener("click", () => { player.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "center" }); film.play().catch(() => {}); });
-$("#theatre").addEventListener("click", () => theatre(false));
+/* click anywhere outside the player to bring the page back */
+document.addEventListener("click", e => { if (document.body.classList.contains("theatre") && !player.contains(e.target) && performance.now() - theatreAt > 500) theatre(false); });
 film.addEventListener("play", () => { if (!reduced() && !isTouch) theatre(true); follow = true; });
 film.addEventListener("pause", () => theatre(false));
 film.addEventListener("ended", () => theatre(false));
