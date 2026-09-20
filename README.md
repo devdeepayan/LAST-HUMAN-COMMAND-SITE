@@ -33,7 +33,7 @@ last-human-command-site/
 ├── index.html
 ├── README.md
 └── assets/
-    ├── film.mp4
+    ├── film-final.mp4
     └── characters/
         ├── arin.jpg
         ├── aeon.jpg
