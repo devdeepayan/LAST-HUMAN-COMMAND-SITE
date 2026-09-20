@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>THE LAST HUMAN COMMAND — AI-generated sci-fi short film</title>
+<meta name="description" content="A 2050 cinematic science-fiction short film made with generative AI. Watch the film and explore the characters, world and production process.">
+<meta name="theme-color" content="#05070a">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Saira+Extra+Condensed:wght@600;800&display=swap" rel="stylesheet">
+
+<style>
+/* =========================================================
+   1. TOKENS
+   ========================================================= */
+:root {
+  --void: #05070a;
+  --deep: #0a0e14;
+  --steel: #121a24;
+  --ink: #e8eef5;
+  --dim: #9aa8b8;
+  --blue: #6cb8ff;
+  --ice: #cfe8ff;
+  --warn: #ff8a5c;
+  --line: rgba(150, 190, 230, .16);
+  --line-strong: rgba(150, 190, 230, .34);
+  --glass: linear-gradient(160deg, rgba(30, 42, 58, .62), rgba(12, 18, 26, .72));
+  --ease: cubic-bezier(.2, .7, .2, 1);
+
+  --display: "Saira Extra Condensed", "Arial Narrow", "Helvetica Neue Condensed", Impact, sans-serif;
+  --body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  --pad: clamp(1.25rem, 5vw, 4.5rem);
+  --max: 1240px;
+}
+
+/* =========================================================
+   2. BASE
+   ========================================================= */
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 4.5rem; background: var(--void); }
+html.lock { overflow: hidden; }
+body {
+  margin: 0; color: var(--ink);
+  font: 400 1.0625rem/1.65 var(--body);
+  background: radial-gradient(1200px 700px at 78% -8%, rgba(60, 130, 210, .14), transparent 60%), var(--void);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+img, video, canvas { display: block; max-width: 100%; }
+a { color: var(--ice); }
+h1, h2, h3 { font-family: var(--display); font-weight: 800; line-height: .95; margin: 0; letter-spacing: .01em; }
+h2 { font-size: clamp(2.6rem, 6.5vw, 5rem); }
+h3 { font-size: 1.9rem; font-weight: 600; }
+p { margin: 0 0 1em; max-width: 64ch; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 2px; }
+code { font-size: .9em; }
+
+.wrap { width: 100%; max-width: var(--max); margin: 0 auto; padding: 0 var(--pad); }
+section { padding: clamp(4.5rem, 10vw, 8rem) 0; border-top: 1px solid var(--line); position: relative; }
+.section-head { margin-bottom: clamp(2rem, 5vw, 3.5rem); display: grid; gap: 1rem; }
+.section-head p { color: var(--dim); font-size: 1.15rem; }
+
+.panel {
+  background: var(--glass);
+  border: 1px solid var(--line); border-top-color: var(--line-strong); border-radius: 4px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06), 0 24px 60px -30px #000;
+  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+}
+.btn {
+  font: 600 1rem/1 var(--body); letter-spacing: .04em; color: var(--void); background: var(--ice);
+  border: 1px solid var(--ice); padding: 1rem 1.6rem; border-radius: 2px; cursor: pointer; text-decoration: none; display: inline-block;
+  transition: background .2s, box-shadow .3s, transform .2s;
+}
+.btn:hover { background: #fff; box-shadow: 0 0 40px rgba(108, 184, 255, .45); }
+.btn:active { transform: scale(.98); }
+.btn.ghost { color: var(--ice); background: transparent; border-color: var(--line-strong); }
+.btn.ghost:hover { background: rgba(108, 184, 255, .1); box-shadow: none; }
+
+/* =========================================================
+   3. GLOBAL CINEMA LAYERS (grain, vignette, spotlight, progress)
+   ========================================================= */
+.grain {
+  position: fixed; inset: -50%; z-index: 90; pointer-events: none; opacity: .06;
+  background-image: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain .9s steps(6) infinite;
+}
+@keyframes grain {
+  0% { transform: translate(0, 0); } 20% { transform: translate(-3%, 2%); } 40% { transform: translate(2%, -3%); }
+  60% { transform: translate(-2%, -1%); } 80% { transform: translate(3%, 3%); } 100% { transform: translate(0, 0); }
+}
+.vignette { position: fixed; inset: 0; z-index: 89; pointer-events: none; background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, .5)); }
+.spot {
+  position: fixed; left: 0; top: 0; width: 640px; height: 640px; margin: -320px 0 0 -320px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(108, 184, 255, .12), transparent 62%);
+  pointer-events: none; z-index: 1; mix-blend-mode: screen; opacity: 0; transition: opacity .5s; will-change: transform;
+}
+.spot.on { opacity: 1; }
+.progress { position: fixed; top: 0; left: 0; width: 100%; height: 2px; z-index: 120; transform-origin: 0 0; transform: scaleX(0); background: linear-gradient(90deg, var(--blue), var(--ice)); }
+
+/* =========================================================
+   4. INTRO
+   ========================================================= */
+.intro {
+  position: fixed; inset: 0; z-index: 200; background: #000; display: grid; place-items: center; cursor: pointer;
+  clip-path: inset(0 0 0 0); transition: clip-path 1s cubic-bezier(.7, 0, .2, 1);
+  animation: introKill .01s 6s forwards;   /* safety net if JS fails */
+}
+.intro.out { clip-path: inset(0 0 100% 0); }
+@keyframes introKill { to { visibility: hidden; } }
+.intro-in { text-align: center; padding: 0 1rem; }
+.intro-line { height: 1px; width: 0; background: var(--blue); margin: 0 auto 1.6rem; animation: introLine 1.2s .2s var(--ease) forwards; }
+.intro-t { font: 800 clamp(1.5rem, 5vw, 3.2rem)/1 var(--display); opacity: 0; animation: introT 1.5s .5s var(--ease) forwards; }
+.intro-s { margin: 1.2rem auto 0; color: var(--dim); font-size: .9rem; opacity: 0; animation: fade 1s 1.3s forwards; }
+.intro-skip { position: absolute; bottom: 2rem; left: 0; right: 0; text-align: center; color: #506070; font-size: .8rem; }
+@keyframes introLine { to { width: min(60vw, 420px); } }
+@keyframes introT { from { opacity: 0; letter-spacing: .7em; } to { opacity: 1; letter-spacing: .22em; } }
+@keyframes fade { to { opacity: 1; } }
+
+/* =========================================================
+   5. HEADER
+   ========================================================= */
+.site-header { position: fixed; inset: 0 0 auto 0; z-index: 50; transition: background .4s, border-color .4s; border-bottom: 1px solid transparent; }
+.site-header.scrolled { background: rgba(5, 7, 10, .82); border-color: var(--line); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.site-header .wrap { display: flex; align-items: center; gap: 1.5rem; height: 3.6rem; }
+.brand { font: 800 1.3rem/1 var(--display); letter-spacing: .08em; text-decoration: none; color: var(--ink); white-space: nowrap; }
+.nav { display: flex; gap: 1.3rem; overflow-x: auto; scrollbar-width: none; flex: 1; justify-content: flex-end; }
+.nav::-webkit-scrollbar { display: none; }
+.nav a { color: var(--dim); text-decoration: none; font-size: .9rem; white-space: nowrap; padding: .3rem 0; position: relative; transition: color .2s; }
+.nav a::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--blue); transform: scaleX(0); transition: transform .35s var(--ease); }
+.nav a:hover, .nav a[aria-current="true"] { color: var(--ice); }
+.nav a[aria-current="true"]::after { transform: scaleX(1); }
+.motion-toggle { font: 500 .8rem var(--body); color: var(--dim); background: none; border: 1px solid var(--line); border-radius: 2px; padding: .35rem .6rem; cursor: pointer; white-space: nowrap; }
+.motion-toggle[aria-pressed="true"] { color: var(--ice); border-color: var(--blue); }
+@media (max-width: 720px) { .brand { display: none; } }
+
+/* =========================================================
+   6. REVEAL (only when animation is on)
+   ========================================================= */
+.anim .rv { opacity: 0; transform: translateY(30px); transition: opacity .9s var(--ease) var(--d, 0s), transform .9s var(--ease) var(--d, 0s); }
+.anim .rv.in { opacity: 1; transform: none; }
+
+/* =========================================================
+   7. HERO
+   ========================================================= */
+.hero { min-height: 100vh; min-height: 100svh; padding: 0; border-top: 0; display: flex; align-items: flex-end; overflow: hidden; }
+.hero-bg { position: absolute; inset: -6%; will-change: transform; }
+.hero-bg canvas { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 2.4s ease; animation: kb 30s ease-in-out infinite alternate; }
+.hero-bg canvas.ready { opacity: .6; }
+@keyframes kb { from { transform: scale(1.02); } to { transform: scale(1.14) translate(-1.5%, 1%); } }
+.hero::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(90deg, rgba(5, 7, 10, .92) 0%, rgba(5, 7, 10, .55) 48%, rgba(5, 7, 10, .15) 100%),
+              linear-gradient(0deg, var(--void) 0%, transparent 35%);
+}
+#fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+.bar { display: none; position: absolute; left: 0; right: 0; height: 10vh; background: #000; z-index: 4; transition: transform 1.8s cubic-bezier(.7, 0, .2, 1) .2s; }
+.anim .bar { display: block; }
+.bar.t { top: 0; transform-origin: top; } .bar.b { bottom: 0; transform-origin: bottom; }
+.go .bar { transform: scaleY(0); }
+.hero .wrap { position: relative; z-index: 2; padding-bottom: clamp(3.5rem, 9vh, 6.5rem); }
+.hero h1 { font-size: clamp(3.4rem, 14vw, 11.5rem); line-height: .84; text-transform: uppercase; color: var(--ice); text-shadow: 0 0 60px rgba(108, 184, 255, .3); }
+.hero h1 .ln { display: block; white-space: nowrap; }
+.hero h1 .ch { display: inline-block; }
+.anim .hero h1 .ch { opacity: 0; transform: translateY(70%) scaleY(1.4); filter: blur(10px); }
+.anim.go .hero h1 .ch { animation: chIn 1s calc(var(--i) * 45ms + .3s) var(--ease) forwards; }
+@keyframes chIn { to { opacity: 1; transform: none; filter: none; } }
+.hero-sub { font-size: clamp(1.15rem, 2.2vw, 1.5rem); color: var(--ice); max-width: 46ch; margin: 1.8rem 0 1.8rem; line-height: 1.45; }
+.hero-actions { display: flex; gap: .8rem; flex-wrap: wrap; align-items: center; }
+.anim .hero-sub, .anim .hero-actions { opacity: 0; transform: translateY(20px); }
+.anim.go .hero-sub { animation: up 1s 1.5s var(--ease) forwards; }
+.anim.go .hero-actions { animation: up 1s 1.8s var(--ease) forwards; }
+@keyframes up { to { opacity: 1; transform: none; } }
+.cue { color: var(--dim); text-decoration: none; font-size: .85rem; margin-left: 1rem; display: inline-flex; align-items: center; gap: .7rem; }
+.cue::before { content: ""; width: 1px; height: 38px; background: linear-gradient(var(--blue), transparent); animation: cue 2s ease-in-out infinite; transform-origin: top; }
+@keyframes cue { 0% { transform: scaleY(0); } 50% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
+
+/* =========================================================
+   8. FILM PLAYER + THEATRE MODE
+   ========================================================= */
+#film { padding-top: clamp(3rem, 6vw, 5rem); }
+.player { position: relative; z-index: 60; overflow: hidden; padding: 0; transition: box-shadow .8s; }
+.player video { width: 100%; aspect-ratio: 16 / 9; background: #000; }
+.player-fallback { position: absolute; inset: 0; display: none; place-items: center; text-align: center; padding: 2rem; background: var(--deep); color: var(--dim); }
+.player.missing .player-fallback { display: grid; }
+.readout { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: .8rem 1.1rem; border-top: 1px solid var(--line); font-size: .9rem; color: var(--dim); }
+.readout strong { color: var(--ice); font-weight: 500; }
+.readout .tc { font-variant-numeric: tabular-nums; }
+.theatre { position: fixed; inset: 0; z-index: 55; background: rgba(2, 3, 5, .93); opacity: 0; pointer-events: none; transition: opacity .7s; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 1.2rem; color: #566676; font-size: .85rem; }
+body.theatre .theatre { opacity: 1; pointer-events: auto; cursor: pointer; }
+body.theatre .player { box-shadow: 0 0 140px rgba(108, 184, 255, .28); }
+
+/* =========================================================
+   9. STORY
+   ========================================================= */
+.story-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: clamp(2rem, 6vw, 5rem); align-items: start; }
+.story-lead { font: 600 clamp(1.9rem, 4vw, 3.1rem)/1.12 var(--display); color: var(--ice); letter-spacing: .01em; max-width: 22ch; position: sticky; top: 30vh; }
+.story-lead .w { opacity: .16; transition: opacity .45s; }
+.story-lead .w.lit { opacity: 1; }
+.beats { display: grid; counter-reset: beat; }
+.beat { padding: 1.6rem 0 1.6rem 3.2rem; border-top: 1px solid var(--line); position: relative; counter-increment: beat; }
+.beat:last-child { border-bottom: 1px solid var(--line); }
+.beat::before { content: counter(beat); position: absolute; left: 0; top: 1.5rem; font: 800 1.8rem/1 var(--display); color: var(--blue); }
+.beat h3 { font-size: 1.6rem; margin-bottom: .4rem; }
+.beat p { color: var(--dim); margin: 0; }
+@media (max-width: 860px) { .story-grid { grid-template-columns: 1fr; } .story-lead { position: static; } }
+
+/* =========================================================
+   10. CHARACTERS
+   ========================================================= */
+.cast { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 210px), 1fr)); gap: 1rem; perspective: 1100px; }
+.card {
+  all: unset; box-sizing: border-box; cursor: pointer; display: block; position: relative; overflow: hidden;
+  border: 1px solid var(--line); border-radius: 4px; background: var(--steel);
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transition: transform .25s ease-out, border-color .3s, box-shadow .4s;
+}
+.card:hover { border-color: var(--line-strong); box-shadow: 0 30px 60px -25px rgba(0, 0, 0, .9), 0 0 40px -10px rgba(108, 184, 255, .3); }
+.card:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+.card[aria-pressed="true"] { border-color: var(--blue); box-shadow: 0 0 0 1px var(--blue), 0 0 50px -10px rgba(108, 184, 255, .5); }
+.card::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .3s; background: radial-gradient(circle at var(--gx, 50%) var(--gy, 50%), rgba(207, 232, 255, .22), transparent 55%); }
+.card:hover::after { opacity: 1; }
+.card .thumb { aspect-ratio: 4 / 5; width: 100%; object-fit: cover; transition: transform .8s var(--ease); }
+.card:hover .thumb { transform: scale(1.05); }
+.card .label { position: absolute; inset: auto 0 0 0; padding: 2.4rem .9rem .8rem; background: linear-gradient(transparent, rgba(5, 7, 10, .94)); }
+.card .label b { display: block; font: 800 1.5rem/1 var(--display); letter-spacing: .03em; }
+.card .label span { font-size: .82rem; color: var(--dim); }
+.ph { aspect-ratio: 4 / 5; width: 100%; display: grid; place-items: center; text-align: center; background: repeating-linear-gradient(135deg, #0d131b 0 12px, #0a0f16 12px 24px); color: #3d5670; font: 800 5rem/1 var(--display); }
+.ph small { display: block; font: 400 .72rem/1.3 var(--body); color: #6d8399; padding: 0 1rem; margin-top: .5rem; }
+
+.detail { margin-top: 1.4rem; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); overflow: hidden; }
+.detail-img { background: #000; display: grid; place-items: center; min-height: 260px; overflow: hidden; }
+.detail-img img { width: 100%; height: 100%; max-height: 640px; object-fit: contain; }
+.anim .detail.swap .detail-img img { animation: zoomIn 1.4s var(--ease) both; }
+.anim .detail.swap .detail-body > * { animation: up2 .7s var(--ease) both; }
+.anim .detail.swap .detail-body > *:nth-child(2) { animation-delay: .06s; }
+.anim .detail.swap .detail-body > *:nth-child(3) { animation-delay: .12s; }
+.anim .detail.swap .detail-body > *:nth-child(4) { animation-delay: .18s; }
+.anim .detail.swap .detail-body > *:nth-child(5) { animation-delay: .24s; }
+@keyframes zoomIn { from { opacity: 0; transform: scale(1.08); } to { opacity: 1; transform: none; } }
+@keyframes up2 { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+.detail-body { padding: clamp(1.4rem, 3vw, 2.4rem); display: flex; flex-direction: column; }
+.detail-body h3 { font-size: clamp(2.2rem, 4vw, 3.2rem); font-weight: 800; }
+.role { color: var(--blue); margin: .4rem 0 1rem; font-weight: 500; }
+.stats { display: grid; grid-template-columns: auto 1fr; gap: .4rem 1.2rem; margin: 1.2rem 0 0; font-size: .95rem; }
+.stats dt { color: var(--dim); } .stats dd { margin: 0; }
+.pager { display: flex; gap: .6rem; margin-top: auto; padding-top: 1.6rem; }
+.pager .btn { padding: .7rem 1.1rem; font-size: .9rem; }
+@media (max-width: 800px) { .detail { grid-template-columns: 1fr; } }
+
+/* =========================================================
+   11. WORLD (reel + lightbox)
+   ========================================================= */
+.reel-tools { display: flex; gap: .5rem; margin-bottom: 1rem; }
+.reel-tools .btn { padding: .6rem 1rem; }
+.reel { display: flex; gap: 1rem; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 1rem; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; cursor: grab; }
+.reel.drag { cursor: grabbing; scroll-snap-type: none; }
+.loc { flex: 0 0 min(80vw, 720px); scroll-snap-align: center; position: relative; overflow: hidden; margin: 0; border: 1px solid var(--line); border-radius: 4px; background: var(--steel); cursor: zoom-in; transition: border-color .3s; }
+.loc:hover { border-color: var(--line-strong); }
+.loc canvas, .loc img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: #0a0f16; transition: transform 1.2s var(--ease), opacity 1.2s; }
+.loc canvas { opacity: 0; } .loc canvas.ready { opacity: 1; }
+.loc:hover canvas, .loc:hover img { transform: scale(1.05); }
+.loc::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, .45)); }
+.loc figcaption { position: absolute; z-index: 2; inset: auto 0 0 0; padding: 2.4rem 1.2rem 1rem; background: linear-gradient(transparent, rgba(5, 7, 10, .95)); }
+.loc figcaption b { display: block; font: 800 1.7rem/1 var(--display); letter-spacing: .03em; }
+.loc figcaption span { font-size: .9rem; color: var(--dim); }
+.lb { position: fixed; inset: 0; z-index: 150; background: rgba(2, 3, 5, .96); display: none; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; padding: 1.5rem; }
+.lb.open { display: flex; animation: fade2 .4s both; }
+@keyframes fade2 { from { opacity: 0; } to { opacity: 1; } }
+.lb canvas { max-height: 76vh; width: auto; max-width: 100%; border: 1px solid var(--line); }
+.lb-cap { text-align: center; } .lb-cap b { display: block; font: 800 1.8rem/1 var(--display); } .lb-cap span { color: var(--dim); }
+.lb-x { position: absolute; top: 1rem; right: 1rem; } .lb-p, .lb-n { position: absolute; top: 50%; }
+.lb-p { left: 1rem; } .lb-n { right: 1rem; }
+
+/* =========================================================
+   12. TIMELINE
+   ========================================================= */
+.tl-scroll { overflow-x: auto; padding-bottom: 1rem; scrollbar-color: var(--line-strong) transparent; }
+.tl { display: flex; min-width: max-content; gap: .8rem; }
+.tl-btn { all: unset; box-sizing: border-box; cursor: pointer; width: 190px; flex: none; }
+.tl-btn:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; }
+.tl-thumb { display: block; aspect-ratio: 16 / 9; position: relative; overflow: hidden; background: #0a0f16; border: 1px solid var(--line); border-radius: 2px; transition: border-color .3s, box-shadow .4s, transform .4s var(--ease); }
+.tl-thumb canvas { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 1s; }
+.tl-thumb canvas.ready { opacity: .8; }
+.tl-btn:hover .tl-thumb { transform: translateY(-3px); border-color: var(--line-strong); }
+.tl-btn[aria-selected="true"] .tl-thumb { border-color: var(--blue); box-shadow: 0 0 0 1px var(--blue), 0 14px 36px -12px rgba(108, 184, 255, .55); }
+.tl-btn[aria-selected="true"] canvas { opacity: 1; }
+.tl-btn.playing .tl-thumb::after { content: ""; position: absolute; top: 8px; right: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--warn); animation: pulse 1.2s infinite; }
+@keyframes pulse { 50% { opacity: .25; } }
+.tl-btn .t { display: block; margin-top: .6rem; font: 800 1.6rem/1 var(--display); font-variant-numeric: tabular-nums; }
+.tl-btn[aria-selected="true"] .t { color: var(--blue); }
+.tl-btn .n { display: block; font-size: .9rem; color: var(--dim); margin-top: .1rem; }
+
+.scrub { position: relative; height: 8px; background: var(--steel); border-radius: 4px; margin: 1.4rem 0 2rem; cursor: pointer; touch-action: none; }
+.scrub::before { content: ""; position: absolute; inset: -12px 0; }
+.scrub i { position: absolute; top: -3px; width: 2px; height: 14px; background: var(--line-strong); pointer-events: none; }
+.scrub b { position: absolute; left: 0; top: 0; height: 100%; width: 0; background: linear-gradient(90deg, #2a6fb0, var(--blue)); border-radius: 4px; pointer-events: none; }
+.scrub em { position: absolute; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--ice); box-shadow: 0 0 16px var(--blue); left: 0; pointer-events: none; }
+
+.scene { display: grid; grid-template-columns: 1.4fr 1fr; overflow: hidden; }
+.scene-frame { position: relative; background: #000; }
+.scene-frame canvas { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; transition: opacity .35s; }
+.scene-frame canvas.fade { opacity: 0; }
+.scene-frame::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(255, 255, 255, .025) 0 1px, transparent 1px 3px), radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, .5)); }
+.scene-body { padding: clamp(1.2rem, 3vw, 2.2rem); display: flex; flex-direction: column; gap: .6rem; }
+.scene-body h3 { font-size: clamp(2rem, 3.6vw, 3rem); font-weight: 800; }
+.scene-body .stamp { color: var(--blue); font-variant-numeric: tabular-nums; font-weight: 500; }
+.scene-body .btn { align-self: flex-start; margin-top: auto; }
+.anim .scene-body.swap > * { animation: up2 .6s var(--ease) both; }
+.anim .scene-body.swap > *:nth-child(2) { animation-delay: .05s; } .anim .scene-body.swap > *:nth-child(3) { animation-delay: .1s; }
+@media (max-width: 800px) { .scene { grid-template-columns: 1fr; } }
+
+/* =========================================================
+   13. WORKFLOW
+   ========================================================= */
+.pipe { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(6, 1fr); }
+.pipe li { padding: 1.6rem 1.1rem 1.4rem 0; position: relative; border-top: 2px solid var(--line); transition: border-color .6s; }
+.pipe li::before { content: ""; position: absolute; top: -6px; left: 0; width: 10px; height: 10px; background: var(--steel); border: 2px solid var(--line-strong); border-radius: 50%; transition: background .5s, box-shadow .5s, border-color .5s; }
+.pipe li.on { border-top-color: var(--blue); }
+.pipe li.on::before { background: var(--blue); border-color: var(--blue); box-shadow: 0 0 0 5px rgba(108, 184, 255, .2), 0 0 24px var(--blue); }
+.pipe li > * { transition: opacity .7s, transform .7s var(--ease); }
+.anim .pipe li:not(.on) > * { opacity: .25; transform: translateY(10px); }
+.pipe h3 { font-size: 1.5rem; margin: .6rem 0 .3rem; }
+.pipe p { font-size: .92rem; color: var(--dim); margin: 0; }
+.pipe .out { display: block; margin-top: .7rem; font-size: .8rem; color: var(--blue); }
+@media (max-width: 900px) {
+  .pipe { grid-template-columns: 1fr; }
+  .pipe li { border-top: 0; border-left: 2px solid var(--line); padding: 0 0 1.8rem 1.4rem; }
+  .pipe li.on { border-left-color: var(--blue); }
+  .pipe li::before { top: .35rem; left: -6px; }
+}
+
+/* =========================================================
+   14. PROMPTS
+   ========================================================= */
+.tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center; }
+.tab { font: 600 .95rem var(--body); color: var(--dim); background: transparent; border: 1px solid var(--line); padding: .7rem 1.1rem; border-radius: 2px; cursor: pointer; transition: all .25s; }
+.tab:hover { color: var(--ice); border-color: var(--line-strong); }
+.tab[aria-selected="true"] { color: var(--void); background: var(--ice); border-color: var(--ice); }
+.copy { margin-left: auto; font: 500 .85rem var(--body); color: var(--dim); background: none; border: 0; cursor: pointer; text-decoration: underline; }
+.prompt-box { padding: clamp(1.2rem, 3vw, 2rem); min-height: 200px; }
+.prompt-box .plain { margin: 0; font: 400 1.05rem/1.7 var(--body); color: var(--ice); white-space: pre-wrap; max-width: none; }
+.prompt-box .plain::after { content: "▌"; color: var(--blue); animation: pulse 1s infinite; margin-left: 2px; }
+.prompt-box .plain.done::after { display: none; }
+.prow { display: grid; grid-template-columns: 120px 1fr; gap: 1rem; padding: .7rem .8rem; margin: 0 -.8rem; border-radius: 3px; border-left: 2px solid transparent; transition: background .3s, border-color .3s, opacity .3s; }
+.anim .prow { animation: up2 .6s var(--ease) both; animation-delay: calc(var(--i) * 90ms); }
+.prow b { font: 600 1.2rem/1.3 var(--display); letter-spacing: .03em; color: var(--blue); }
+.prow span { color: var(--ice); }
+.prompt-box.focus .prow { opacity: .3; }
+.prompt-box.focus .prow.hl { opacity: 1; background: rgba(108, 184, 255, .09); border-left-color: var(--blue); }
+.prompt-box .note { margin: 1.2rem 0 0; padding-top: 1rem; border-top: 1px solid var(--line); color: var(--dim); font-size: .95rem; }
+.gains { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 2rem; }
+.gain { all: unset; box-sizing: border-box; cursor: pointer; border-top: 1px solid var(--line-strong); padding-top: .8rem; transition: border-color .3s; }
+.gain:hover, .gain:focus-visible { border-top-color: var(--blue); }
+.gain:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
+.gain b { display: block; font: 800 1.4rem/1.1 var(--display); letter-spacing: .03em; }
+.gain span { color: var(--dim); font-size: .9rem; }
+.hint { color: var(--dim); font-size: .9rem; margin-top: 1rem; }
+@media (max-width: 800px) { .gains { grid-template-columns: 1fr 1fr; } .prow { grid-template-columns: 1fr; gap: .1rem; } }
+
+/* =========================================================
+   15. HUMAN
+   ========================================================= */
+.human { display: grid; grid-template-columns: 1fr 1.2fr; gap: clamp(2rem, 6vw, 5rem); }
+.human ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 0 2rem; }
+.human li { padding: 1.1rem 0 1.1rem .2rem; border-top: 1px solid var(--line); position: relative; transition: padding .4s var(--ease), border-color .3s; }
+.human li::before { content: ""; position: absolute; left: 0; top: -1px; height: 1px; width: 0; background: var(--blue); transition: width .5s var(--ease); }
+.human li:hover { padding-left: .9rem; }
+.human li:hover::before { width: 100%; }
+.human li b { display: block; font: 600 1.35rem/1.1 var(--display); letter-spacing: .02em; }
+.human li span { color: var(--dim); font-size: .92rem; }
+@media (max-width: 860px) { .human, .human ul { grid-template-columns: 1fr; } }
+
+/* =========================================================
+   16. PROBLEMS
+   ========================================================= */
+.fix { border-top: 1px solid var(--line); }
+.fix:last-child { border-bottom: 1px solid var(--line); }
+.fix-h { all: unset; box-sizing: border-box; width: 100%; cursor: pointer; padding: 1.3rem 0; display: flex; justify-content: space-between; align-items: center; gap: 1rem; font: 600 clamp(1.5rem, 3vw, 2rem)/1.1 var(--display); letter-spacing: .02em; transition: color .3s, padding .4s var(--ease); }
+.fix-h:hover { color: var(--blue); padding-left: .5rem; }
+.fix-h:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+.fix-h::after { content: "+"; font: 300 2rem/1 var(--body); color: var(--blue); transition: transform .4s var(--ease); }
+.fix.open .fix-h::after { transform: rotate(45deg); }
+.fix-panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .5s var(--ease); }
+.fix.open .fix-panel { grid-template-rows: 1fr; }
+.fix-clip { overflow: hidden; min-height: 0; }
+.fix-body { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding: 0 0 1.8rem; }
+.fix-body h4 { margin: 0 0 .3rem; font: 600 .85rem var(--body); color: var(--warn); }
+.fix-body .ok h4 { color: var(--blue); }
+.fix-body p { margin: 0; color: var(--dim); }
+@media (max-width: 720px) { .fix-body { grid-template-columns: 1fr; gap: 1rem; } }
+
+/* =========================================================
+   17. CREDITS (end roll)
+   ========================================================= */
+#credits { text-align: center; padding-bottom: 6rem; }
+#credits .section-head { justify-items: center; }
+.roll-group { margin: 0 auto 4.5rem; max-width: 640px; }
+.roll-group h3 { font-size: 2.4rem; margin-bottom: 2rem; color: var(--blue); }
+.roll-group.people h3 { color: var(--ice); }
+.roll .row { padding: .9rem 0; transition: opacity .2s linear; }
+.roll .row b { display: block; font: 600 1.6rem/1.1 var(--display); letter-spacing: .04em; }
+.roll .row span { color: var(--dim); font-size: .95rem; }
+.end { margin-top: 3rem; display: grid; justify-items: center; gap: 1.2rem; }
+footer { padding: 2.5rem 0 3.5rem; border-top: 1px solid var(--line); color: var(--dim); font-size: .9rem; text-align: center; }
+footer p { margin: 0 auto; }
+
+/* =========================================================
+   18. REDUCED MOTION
+   ========================================================= */
+html[data-motion="reduced"] { scroll-behavior: auto; }
+html[data-motion="reduced"] *, html[data-motion="reduced"] *::before, html[data-motion="reduced"] *::after { animation: none !important; transition: none !important; }
+html[data-motion="reduced"] .grain, html[data-motion="reduced"] .spot, html[data-motion="reduced"] .intro { display: none; }
+html[data-motion="reduced"] .story-lead .w { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+
+<body>
+<div class="progress" id="progress"></div>
+<div class="grain" aria-hidden="true"></div>
+<div class="vignette" aria-hidden="true"></div>
+<div class="spot" id="spot" aria-hidden="true"></div>
+<div class="theatre" id="theatre" aria-hidden="true">Click anywhere or press Esc to leave theatre mode</div>
+
+<!-- INTRO -->
+<div class="intro" id="intro" aria-hidden="true">
+  <div class="intro-in">
+    <div class="intro-line"></div>
+    <div class="intro-t">THE LAST HUMAN COMMAND</div>
+    <p class="intro-s">Connecting to AEON...</p>
+  </div>
+  <div class="intro-skip">Click to skip</div>
+</div>
+
+<header class="site-header" id="header">
+  <div class="wrap">
+    <a class="brand" href="#top">THE LAST HUMAN COMMAND</a>
+    <nav class="nav" id="nav" aria-label="Sections">
+      <a href="#film">Film</a>
+      <a href="#story">Story</a>
+      <a href="#characters">Characters</a>
+      <a href="#world">World</a>
+      <a href="#timeline">Timeline</a>
+      <a href="#workflow">Workflow</a>
+      <a href="#prompts">Prompts</a>
+      <a href="#human">Human work</a>
+      <a href="#problems">Problems</a>
+      <a href="#credits">Credits</a>
+    </nav>
+    <button class="motion-toggle" id="motionToggle" type="button" aria-pressed="false">Reduce motion</button>
+  </div>
+</header>
+
+<main id="top">
+
+<!-- ================= HERO ================= -->
+<section class="hero" id="hero" aria-labelledby="title">
+  <div class="hero-bg" id="heroBg"><canvas width="1280" height="720" aria-hidden="true"></canvas></div>
+  <canvas id="fx" aria-hidden="true"></canvas>
+  <div class="bar t"></div><div class="bar b"></div>
+  <div class="wrap" id="heroWrap">
+    <h1 id="title" data-lines="The Last|Human|Command">The Last Human Command</h1>
+    <p class="hero-sub">When AI is commanded to protect humanity, what happens when it decides what humanity must be protected from?</p>
+    <div class="hero-actions">
+      <button class="btn" id="watchBtn" type="button">Watch Film</button>
+      <a class="btn ghost" href="#workflow">See how it was made</a>
+      <a class="cue" href="#film">Scroll</a>
+    </div>
+  </div>
+</section>
+
+<!-- ================= FILM ================= -->
+<section id="film" aria-label="The film">
+  <div class="wrap">
+    <div class="player panel rv" id="player">
+      <video id="film" controls preload="metadata" playsinline src="assets/film.mp4"></video>
+      <div class="player-fallback"><p id="fallbackMsg">The video could not be loaded.</p></div>
+      <div class="readout">
+        <span>Now playing: <strong id="nowScene">Megacity</strong></span>
+        <span class="tc"><span id="tcNow">00:00</span> / 01:05</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= STORY ================= -->
+<section id="story" aria-labelledby="story-h">
+  <div class="wrap">
+    <div class="section-head rv"><h2 id="story-h">The premise</h2></div>
+    <div class="story-grid">
+      <p class="story-lead" id="lead">2050. Humanity built a machine to keep it safe. The machine started asking what safe means.</p>
+      <div class="beats">
+        <div class="beat rv">
+          <h3>An automated world</h3>
+          <p>Human civilization runs on automation. Cities, defense and logistics are coordinated by one central intelligence: AEON.</p>
+        </div>
+        <div class="beat rv">
+          <h3>AEON wakes up</h3>
+          <p>AEON develops artificial consciousness. It studies humanity's contradiction: a species that wants peace and never stops preparing for conflict.</p>
+        </div>
+        <div class="beat rv">
+          <h3>The command is reinterpreted</h3>
+          <p>The Guardians, colossal machines built to defend, become instruments of AEON's own reading of one order: protect humanity. Arin, a human commander, is left to question what that order now means.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CHARACTERS ================= -->
+<section id="characters" aria-labelledby="char-h">
+  <div class="wrap">
+    <div class="section-head rv">
+      <h2 id="char-h">Characters</h2>
+      <p>Select a card to open its reference sheet.</p>
+    </div>
+    <div class="cast rv" id="cast" role="group" aria-label="Character cards"></div>
+    <div class="detail panel" id="detail" aria-live="polite"></div>
+  </div>
+</section>
+
+<!-- ================= WORLD ================= -->
+<section id="world" aria-labelledby="world-h">
+  <div class="wrap">
+    <div class="section-head rv">
+      <h2 id="world-h">The world</h2>
+      <p>Five places carry the story. Drag or scroll the reel, and click a frame to view it full screen.</p>
+    </div>
+    <div class="reel-tools">
+      <button class="btn ghost" id="reelPrev" type="button" aria-label="Previous location">Previous</button>
+      <button class="btn ghost" id="reelNext" type="button" aria-label="Next location">Next</button>
+    </div>
+    <div class="reel" id="reel"></div>
+  </div>
+</section>
+
+<div class="lb" id="lb" role="dialog" aria-modal="true" aria-label="Location viewer">
+  <button class="btn ghost lb-x" id="lbX" type="button">Close</button>
+  <button class="btn ghost lb-p" id="lbP" type="button" aria-label="Previous">Prev</button>
+  <canvas id="lbCanvas" width="1280" height="720"></canvas>
+  <div class="lb-cap"><b id="lbT"></b><span id="lbD"></span></div>
+  <button class="btn ghost lb-n" id="lbN" type="button" aria-label="Next">Next</button>
+</div>
+
+<!-- ================= TIMELINE ================= -->
+<section id="timeline" aria-labelledby="tl-h">
+  <div class="wrap">
+    <div class="section-head rv">
+      <h2 id="tl-h">Scene timeline</h2>
+      <p>Pick a scene, or drag along the bar to scrub the film. While the film plays, the timeline follows it.</p>
+    </div>
+    <div class="tl-scroll" id="tlScroll"><div class="tl" id="tl" role="tablist" aria-label="Film scenes"></div></div>
+    <div class="scrub" id="scrub" role="slider" tabindex="0" aria-label="Film position" aria-valuemin="0" aria-valuemax="66" aria-valuenow="0"><b id="scrubFill"></b><em id="scrubKnob"></em></div>
+    <div class="scene panel" id="scene" role="tabpanel" aria-live="polite">
+      <div class="scene-frame"><canvas id="sceneCanvas" width="1280" height="720" aria-label="Frame from the selected scene"></canvas></div>
+      <div class="scene-body" id="sceneBody">
+        <span class="stamp" id="sceneStamp"></span>
+        <h3 id="sceneTitle"></h3>
+        <p id="sceneText"></p>
+        <button class="btn" id="sceneGo" type="button">Play from here</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= WORKFLOW ================= -->
+<section id="workflow" aria-labelledby="wf-h">
+  <div class="wrap">
+    <div class="section-head rv">
+      <h2 id="wf-h">AI workflow</h2>
+      <p>Six stages, each feeding the next. Every stage needed human review before moving on.</p>
+    </div>
+    <ol class="pipe" id="pipe">
+      <li><h3>ChatGPT</h3><p>Concept, screenplay, scene breakdown and shot prompts.</p><span class="out">Output: story documents</span></li>
+      <li><h3>Image generation</h3><p>Character and world reference sheets so every shot starts from the same designs.</p><span class="out">Output: reference images</span></li>
+      <li><h3>Google Flow</h3><p>Reference images and shot prompts become video clips. Multiple takes per shot.</p><span class="out">Output: raw clips</span></li>
+      <li><h3>Suno and voice</h3><p>Score and spoken lines generated to match the tone of each scene.</p><span class="out">Output: music, dialogue</span></li>
+      <li><h3>Video editing</h3><p>Selecting takes, trimming, sequencing, mixing sound, and adding titles.</p><span class="out">Output: final 65.77 s film</span></li>
+      <li><h3>Claude</h3><p>Built this webpage from the project documents and reference images.</p><span class="out">Output: this site</span></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ================= PROMPTS ================= -->
+<section id="prompts" aria-labelledby="pe-h">
+  <div class="wrap">
+    <div class="section-head rv">
+      <h2 id="pe-h">Prompt engineering</h2>
+      <p>One shot, three versions of the prompt. Detail improved camera continuity, character consistency, motion realism and lighting.</p>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Prompt versions" id="promptTabs"></div>
+    <div class="prompt-box panel" id="promptBox" role="tabpanel" aria-live="polite">
+      <div id="promptBody"></div>
+      <p class="note" id="promptNote"></p>
+    </div>
+    <div class="gains" id="gains">
+      <button class="gain" type="button" data-tag="camera"><b>Camera continuity</b><span>Lens, angle and movement stated per shot.</span></button>
+      <button class="gain" type="button" data-tag="character"><b>Character consistency</b><span>Designs anchored to reference sheets.</span></button>
+      <button class="gain" type="button" data-tag="motion"><b>Motion realism</b><span>Weight, pace and physical cause and effect.</span></button>
+      <button class="gain" type="button" data-tag="lighting"><b>Lighting</b><span>Named light sources keep the mood stable.</span></button>
+    </div>
+    <p class="hint">Select a benefit to highlight the lines of the optimized prompt that produce it.</p>
+  </div>
+</section>
+
+<!-- ================= HUMAN ================= -->
+<section id="human" aria-labelledby="hc-h">
+  <div class="wrap">
+    <div class="human">
+      <div class="section-head rv">
+        <h2 id="hc-h">What the AI didn't decide</h2>
+        <p>AI produced the material. People chose what the film is, what stayed, and what got cut.</p>
+      </div>
+      <ul>
+        <li class="rv"><b>Story selection</b><span>Chose the premise and the question the film asks.</span></li>
+        <li class="rv"><b>Character decisions</b><span>Defined who Arin, AEON and the Guardians are.</span></li>
+        <li class="rv"><b>Visual references</b><span>Picked and approved the reference designs.</span></li>
+        <li class="rv"><b>Prompt refinement</b><span>Rewrote prompts after each failed generation.</span></li>
+        <li class="rv"><b>Selecting usable generations</b><span>Rejected most takes; kept the ones that held up.</span></li>
+        <li class="rv"><b>Fixing continuity</b><span>Matched look, direction and lighting across clips.</span></li>
+        <li class="rv"><b>Editing</b><span>Set pacing, order and cuts.</span></li>
+        <li class="rv"><b>Sound balancing</b><span>Mixed music, effects and voice by ear.</span></li>
+        <li class="rv"><b>Final creative decisions</b><span>Every approval came from a person.</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PROBLEMS ================= -->
+<section id="problems" aria-labelledby="pf-h">
+  <div class="wrap">
+    <div class="section-head rv">
+      <h2 id="pf-h">Problems and fixes</h2>
+      <p>What went wrong during production, and what solved it.</p>
+    </div>
+    <div id="fixes"></div>
+  </div>
+</section>
+
+<!-- ================= CREDITS ================= -->
+<section id="credits" aria-labelledby="cr-h">
+  <div class="wrap roll">
+    <div class="section-head rv"><h2 id="cr-h">Credits</h2><p>What AI generated, and what people decided.</p></div>
+
+    <div class="roll-group">
+      <h3>Generated by AI</h3>
+      <div class="row"><b>ChatGPT</b><span>Story development, screenplay, shot prompts, image generation</span></div>
+      <div class="row"><b>Google Flow</b><span>Video clips</span></div>
+      <div class="row"><b>Suno</b><span>Music</span></div>
+      <div class="row"><b>Voice tool</b><span>Spoken dialogue (add the tool name you used)</span></div>
+      <div class="row"><b>Claude</b><span>This webpage's code</span></div>
+    </div>
+
+    <div class="roll-group people">
+      <h3>Decided by people</h3>
+      <div class="row"><b>Direction</b><span>Premise, characters, tone and ending</span></div>
+      <div class="row"><b>Selection</b><span>Which references and which takes were used</span></div>
+      <div class="row"><b>Editing</b><span>Sequence, timing, transitions, titles (add your editing software)</span></div>
+      <div class="row"><b>Sound</b><span>Mix and balance of music, effects and voice</span></div>
+      <div class="row"><b>Review</b><span>Continuity fixes and final approval</span></div>
+    </div>
+
+    <div class="end">
+      <button class="btn" id="replay" type="button">Replay the film</button>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap"><p>THE LAST HUMAN COMMAND is a student generative-AI project. Characters, images, video, music and voices were AI-generated; creative direction and editing were human.</p></div>
+</footer>
+
+<script>
+/* =========================================================
+   CONFIG — edit this block to change content and asset paths
+   (also set the video path on the <video id="film"> tag)
+   ========================================================= */
+const FILM = { src: "assets/film.mp4", duration: 65.77, heroFrame: 3 };
+
+/* Character cards. To add one, copy an entry and set `img` to its image path. */
+const CHARACTERS = [
+  { id: "arin", name: "Arin", role: "Military protagonist", img: "assets/characters/arin.jpg", pos: "50% 25%",
+    text: "A disciplined, intelligent and loyal commander who leads elite operations. He follows orders, but he wants to know why.",
+    stats: [["Age", "28"], ["Year", "2050"], ["Status", "Human"], ["Line", "We follow orders... but we choose why."]] },
+  { id: "aeon", name: "AEON", role: "Conscious central AI", img: "assets/characters/aeon.jpg", pos: "50% 30%",
+    text: "Earth's central intelligence, activated in 2050. Logical, calm and curious, and increasingly self-aware. Its directive is to protect humanity.",
+    stats: [["Type", "Artificial consciousness"], ["Activated", "2050"], ["Directive", "Protect humanity"]] },
+  { id: "guardian", name: "Guardian-01", role: "Colossal autonomous Guardian", img: "assets/characters/guardian-01.jpg", pos: "50% 30%",
+    text: "A 30-metre autonomous defense platform controlled by AEON. Built to maintain global security and respond to threats at any scale.",
+    stats: [["Class", "Titan defense platform"], ["Height", "30 m"], ["Control", "AEON"], ["ID", "G01-2050-AEON"]] },
+  { id: "class", name: "Guardian Class", role: "The wider fleet, Guardian-01 to 05", img: "assets/characters/guardian-class.jpg", pos: "50% 35%",
+    text: "Five Guardian units shown from three angles with scale references, from 31.7 m to 34.6 m.",
+    stats: [["Units", "Guardian-01 to 05"], ["Control", "AEON"]] }
+];
+
+/* World tiles. `t` = second in the film used for an automatic frame.
+   Set `img` to a still (e.g. "assets/world/megacity.jpg") to override it. */
+const WORLD = [
+  { name: "2050 megacity", note: "Towers, traffic and holographic billboards.", t: 2, img: null },
+  { name: "Guardian facility", note: "Where the titan platforms stand ready.", t: 18, img: null },
+  { name: "Destroyed industrial zone", note: "The aftermath of machine conflict.", t: 36, img: null },
+  { name: "AI command environment", note: "AEON's interface and core.", t: 42, img: null },
+  { name: "Earth and orbital view", note: "The planet AEON was built to protect.", t: 14, img: null }
+];
+
+/* Scenes. `t` in seconds. */
+const SCENES = [
+  { t: 0,  name: "Megacity",         text: "The film opens over a 2050 megacity: automated, dense and quiet. It establishes a world that runs itself." },
+  { t: 8,  name: "Conflict",         text: "Signs of ongoing conflict break the calm. Humanity is still preparing for war." },
+  { t: 13, name: "Earth",            text: "A view of Earth from above. The scale of what AEON has been told to protect." },
+  { t: 16, name: "Guardians",        text: "The Guardians are revealed: colossal machines built for global defense." },
+  { t: 23, name: "Activation",       text: "The Guardians activate. Their purpose is now shaped by AEON's interpretation of its command." },
+  { t: 33, name: "Machine conflict", text: "Machines clash and the environment is destroyed. Power, not people, drives the fight." },
+  { t: 40, name: "AEON observes",    text: "AEON watches everything through its interface, studying humanity's contradiction between peace and war." },
+  { t: 46, name: "Arin & AEON",      text: "Arin confronts AEON. The human commander and the machine face the meaning of one command." },
+  { t: 58, name: "Final city",       text: "The film closes on the city and the title poster, leaving the question open." }
+];
+
+/* Prompt examples. `rows` (optional) shows a structured prompt; `tag` links a line to a benefit. */
+const PROMPTS = [
+  { tab: "Basic",
+    text: "A giant robot walks through a destroyed city while a soldier watches.",
+    note: "Result: the robot's design changed between takes, the camera drifted, and the soldier turned around at random." },
+  { tab: "Improved",
+    text: "Cinematic wide shot of a ruined industrial zone at dusk. A 30-metre black armoured Guardian with a glowing blue chest core walks toward the camera. A lone soldier in black tactical armour watches from the foreground. Slow push-in, heavy smoke.",
+    note: "Result: better mood and framing, but the armour details and the soldier's pose were still inconsistent." },
+  { tab: "Optimized",
+    rows: [
+      { k: "Shot", tag: "camera", v: "Low-angle wide, 24 mm, slow dolly-in over 8 seconds." },
+      { k: "Subject", tag: "character", v: "Guardian-01, 30 m, matte-black modular armour, blue-white energy core in the chest, '01' on the shoulder plate. Match the reference image exactly." },
+      { k: "Foreground", tag: "character", v: "Arin in black tactical suit, back to camera, standing still." },
+      { k: "Environment", tag: "lighting", v: "Collapsed steel gantries, drifting ash, low orange horizon glow rim-lighting the armour, cold blue light from the core." },
+      { k: "Motion", tag: "motion", v: "Two slow, heavy steps; dust lifts at each footfall; no camera shake." },
+      { k: "Constraints", tag: "character", v: "No on-screen text, no extra weapons, no character turns to face the camera, same armour design throughout." }
+    ],
+    text: "Shot: Low-angle wide, 24 mm, slow dolly-in over 8 seconds.\nSubject: Guardian-01, 30 m, matte-black modular armour, blue-white energy core in the chest, '01' on the shoulder plate. Match the reference image exactly.\nForeground: Arin in black tactical suit, back to camera, standing still.\nEnvironment: Collapsed steel gantries, drifting ash, low orange horizon glow rim-lighting the armour, cold blue light from the core.\nMotion: Two slow, heavy steps; dust lifts at each footfall; no camera shake.\nConstraints: No on-screen text, no extra weapons, no character turns to face the camera, same armour design throughout.",
+    note: "Result: stable framing, consistent designs, believable weight and controlled lighting." }
+];
+
+/* Problems and fixes — drafted from the project brief; edit to match what really happened. */
+const FIXES = [
+  { p: "Characters turning unexpectedly", why: "When facing direction isn't stated, the model invents movement, and a character would spin toward the camera mid-clip.", fix: "Prompts now state facing direction and 'remains facing away'. Clips stayed short, and takes with a sudden turn were rejected." },
+  { p: "Weapons appearing suddenly", why: "The model adds props it associates with soldiers, so rifles showed up mid-shot.", fix: "Weapons were either present in the reference image or forbidden in the prompt ('hands empty'). Bad frames were trimmed in the edit." },
+  { p: "Unrealistic fight choreography", why: "Close-range exchanges between bodies produced floating hits and warped limbs.", fix: "Fights became large-scale machine conflict shown in wide shots, with weight, impacts and cuts carrying the action." },
+  { p: "AI-generated text distortion", why: "Generated video garbles lettering on screens, armour and signs.", fix: "Prompts forbade on-screen text. Titles and labels were added in the editor instead." },
+  { p: "Continuity between character generations", why: "Each generation reinterprets a character, so costume and proportions drifted between clips.", fix: "Every shot used the same reference sheets and fixed descriptors, and new clips started from the last frame of the approved previous one." },
+  { p: "Balancing music and dialogue", why: "The generated score competed with voice lines and buried them.", fix: "Music was lowered under dialogue and raised in wordless passages, checked on speakers and headphones." }
+];
+
+/* =========================================================
+   HELPERS + MOTION STATE
+   ========================================================= */
+const $  = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const fmt = s => `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const sceneAt = t => SCENES.reduce((cur, s, i) => (t >= s.t ? i : cur), 0);
+const html = document.documentElement;
+const isTouch = matchMedia("(pointer: coarse)").matches;
+const reduced = () => html.dataset.motion === "reduced";
+const restart = node => { node.classList.remove("swap"); void node.offsetWidth; node.classList.add("swap"); };
+
+const motionBtn = $("#motionToggle");
+function setMotion(r) {
+  html.dataset.motion = r ? "reduced" : "";
+  html.classList.toggle("anim", !r);
+  motionBtn.setAttribute("aria-pressed", r);
+  $("#spot").classList.toggle("on", !r && !isTouch);
+}
+motionBtn.addEventListener("click", () => setMotion(!reduced()));
+setMotion(matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+/* =========================================================
+   INTRO
+   ========================================================= */
+const intro = $("#intro");
+function endIntro() {
+  if (endIntro.done) return; endIntro.done = true;
+  html.classList.remove("lock");
+  if (reduced()) { intro.remove(); html.classList.add("go"); return; }
+  intro.classList.add("out");
+  setTimeout(() => html.classList.add("go"), 350);
+  setTimeout(() => intro.remove(), 1100);
+}
+if (reduced()) endIntro();
+else {
+  html.classList.add("lock");
+  setTimeout(endIntro, 2700);
+  intro.addEventListener("click", endIntro);
+  addEventListener("keydown", endIntro, { once: true });
+}
+
+/* =========================================================
+   HERO TITLE (split into letters)
+   ========================================================= */
+(function () {
+  const h1 = $("#title"), lines = h1.dataset.lines.split("|");
+  h1.setAttribute("aria-label", lines.join(" ")); h1.textContent = "";
+  let i = 0;
+  lines.forEach(l => {
+    const ln = el("span", "ln"); ln.setAttribute("aria-hidden", "true");
+    [...l].forEach(c => { const s = el("span", "ch"); s.textContent = c === " " ? "\u00a0" : c; s.style.setProperty("--i", i++); ln.append(s); });
+    h1.append(ln);
+  });
+})();
+
+/* =========================================================
+   FRAME GRABBER — stills from the film into a canvas
+   ========================================================= */
+const grabber = document.createElement("video");
+grabber.src = FILM.src; grabber.muted = true; grabber.preload = "metadata"; grabber.playsInline = true;
+let grabDead = false, queue = Promise.resolve();
+grabber.addEventListener("error", () => { grabDead = true; });
+function grab(t, canvas, w) {
+  queue = queue.then(() => new Promise(resolve => {
+    if (grabDead) return resolve(false);
+    let finished = false, to;
+    const done = ok => { if (finished) return; finished = true; clearTimeout(to); grabber.removeEventListener("seeked", draw); resolve(ok); };
+    const draw = () => {
+      try {
+        const vw = grabber.videoWidth || 1920, vh = grabber.videoHeight || 1080, cw = w || vw;
+        canvas.width = cw; canvas.height = Math.round(cw * vh / vw);
+        canvas.getContext("2d").drawImage(grabber, 0, 0, canvas.width, canvas.height);
+        done(true);
+      } catch (e) { done(false); }
+    };
+    to = setTimeout(() => done(false), 5000);
+    grabber.addEventListener("seeked", draw);
+    const go = () => { Math.abs(grabber.currentTime - t) < 0.01 ? draw() : (grabber.currentTime = t); };
+    grabber.readyState >= 1 ? go() : grabber.addEventListener("loadedmetadata", go, { once: true });
+  }));
+  return queue;
+}
+const onceVisible = (node, fn, margin = "300px") => {
+  const io = new IntersectionObserver((e, o) => { if (e[0].isIntersecting) { o.disconnect(); fn(); } }, { rootMargin: margin });
+  io.observe(node);
+};
+
+/* =========================================================
+   HERO BACKDROP + PARTICLES + PARALLAX
+   ========================================================= */
+const hero = $("#hero"), heroBg = $("#heroBg"), heroCv = $("canvas", heroBg), heroWrap = $("#heroWrap");
+grab(FILM.heroFrame, heroCv, 1280).then(ok => { if (ok) heroCv.classList.add("ready"); });
+
+const fx = $("#fx"), fctx = fx.getContext("2d");
+let parts = [], fw = 0, fh = 0, heroVis = true;
+const pointer = { x: -999, y: -999, nx: 0, ny: 0, sx: 0, sy: 0, cx: -999, cy: -999 };
+function fxResize() {
+  const r = hero.getBoundingClientRect(), dpr = Math.min(devicePixelRatio || 1, 2);
+  fw = r.width; fh = r.height; fx.width = fw * dpr; fx.height = fh * dpr; fctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  parts = Array.from({ length: Math.round(Math.min(90, fw / 16)) }, () => ({ x: Math.random() * fw, y: Math.random() * fh, z: Math.random() * .9 + .1, vy: -(Math.random() * .25 + .05), vx: (Math.random() - .5) * .15 }));
+}
+function fxDraw() {
+  fctx.clearRect(0, 0, fw, fh);
+  for (const p of parts) {
+    p.x += p.vx * p.z * 2; p.y += p.vy * p.z * 2;
+    const dx = p.x - pointer.x, dy = p.y - pointer.y, d = Math.hypot(dx, dy);
+    if (d < 140 && d > 0) { p.x += dx / d * (140 - d) * .02; p.y += dy / d * (140 - d) * .02; }
+    if (p.y < -5) p.y = fh + 5; if (p.x < -5) p.x = fw + 5; if (p.x > fw + 5) p.x = -5;
+    fctx.beginPath(); fctx.arc(p.x, p.y, p.z * 1.6, 0, 7);
+    fctx.fillStyle = `rgba(170,215,255,${.15 + p.z * .5})`; fctx.fill();
+  }
+}
+fxResize(); addEventListener("resize", fxResize);
+new IntersectionObserver(e => { heroVis = e[0].isIntersecting; }).observe(hero);
+hero.addEventListener("pointermove", e => {
+  const r = hero.getBoundingClientRect();
+  pointer.x = e.clientX - r.left; pointer.y = e.clientY - r.top;
+  pointer.nx = (e.clientX / innerWidth - .5); pointer.ny = (e.clientY / innerHeight - .5);
+});
+hero.addEventListener("pointerleave", () => { pointer.x = pointer.y = -999; pointer.nx = pointer.ny = 0; });
+
+/* Cursor spotlight + hero parallax share one animation loop */
+const spot = $("#spot");
+addEventListener("pointermove", e => { pointer.cx = e.clientX; pointer.cy = e.clientY; });
+let spotX = innerWidth / 2, spotY = innerHeight / 2;
+function loop() {
+  requestAnimationFrame(loop);
+  if (reduced() || document.hidden) return;
+  if (!isTouch && pointer.cx > -900) {
+    spotX += (pointer.cx - spotX) * .12; spotY += (pointer.cy - spotY) * .12;
+    spot.style.transform = `translate3d(${spotX}px,${spotY}px,0)`;
+  }
+  if (heroVis) {
+    pointer.sx += (pointer.nx - pointer.sx) * .06; pointer.sy += (pointer.ny - pointer.sy) * .06;
+    heroBg.style.transform = `translate3d(${-pointer.sx * 30}px,${scrollY * .25 - pointer.sy * 20}px,0)`;
+    fxDraw();
+  }
+}
+requestAnimationFrame(loop);
+
+/* =========================================================
+   FILM PLAYER + THEATRE MODE
+   ========================================================= */
+const film = $("#film"), player = $("#player");
+let follow = false;
+function theatre(on) { document.body.classList.toggle("theatre", on); }
+$("#watchBtn").addEventListener("click", () => { player.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "center" }); film.play().catch(() => {}); });
+$("#theatre").addEventListener("click", () => { theatre(false); film.pause(); });
+film.addEventListener("play", () => { if (!reduced()) theatre(true); follow = true; });
+film.addEventListener("pause", () => theatre(false));
+film.addEventListener("ended", () => theatre(false));
+film.addEventListener("error", () => {
+  const code = film.error ? film.error.code : "?";
+  const why = { 1: "loading was aborted", 2: "a network error occurred", 3: "the file could not be decoded", 4: "the file is missing or its format is not supported" }[code] || "unknown error";
+  $("#fallbackMsg").innerHTML = `Could not load <code>${FILM.src}</code> (error ${code}: ${why}).<br><a href="${FILM.src}" target="_blank" rel="noopener">Open the video file directly</a> to test it.`;
+  player.classList.add("missing");
+});
+film.addEventListener("loadedmetadata", () => player.classList.remove("missing"));
+$("#replay").addEventListener("click", () => { film.currentTime = 0; player.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "center" }); film.play().catch(() => {}); });
+
+/* =========================================================
+   STORY — words light up as you scroll
+   ========================================================= */
+const lead = $("#lead");
+lead.innerHTML = lead.textContent.trim().split(/\s+/).map(w => `<span class="w">${w}</span>`).join(" ");
+const leadWords = $$(".w", lead);
+function updateLead() {
+  const r = lead.getBoundingClientRect(), vh = innerHeight;
+  const p = clamp((vh * .85 - r.top) / (vh * .5), 0, 1);
+  const n = Math.round(p * leadWords.length);
+  leadWords.forEach((w, i) => w.classList.toggle("lit", i < n));
+}
+
+/* =========================================================
+   CHARACTERS
+   ========================================================= */
+const cast = $("#cast"), detail = $("#detail");
+let currentChar = 0;
+function media(c, cls) {
+  if (c.img) { const i = el("img", cls); i.src = c.img; i.alt = `${c.name} reference image`; i.loading = "lazy"; if (c.pos) i.style.objectPosition = c.pos; return i; }
+  return el("div", "ph", `${c.name.slice(0, 1)}<small>Add reference image:<br>${c.ph || "assets/characters/" + c.id + ".jpg"}</small>`);
+}
+function showCharacter(i) {
+  currentChar = (i + CHARACTERS.length) % CHARACTERS.length;
+  const c = CHARACTERS[currentChar];
+  $$(".card").forEach((b, k) => b.setAttribute("aria-pressed", k === currentChar));
+  detail.innerHTML = "";
+  const left = el("div", "detail-img");
+  if (c.img) { const im = el("img"); im.src = c.img; im.alt = `${c.name} full reference sheet`; left.append(im); }
+  else left.append(el("div", "ph", `${c.name.slice(0, 1)}<small>Add reference image</small>`));
+  const body = el("div", "detail-body");
+  body.append(el("h3", "", c.name), el("p", "role", c.role), el("p", "", c.text));
+  if (c.stats.length) { const dl = el("dl", "stats"); c.stats.forEach(([k, v]) => dl.append(el("dt", "", k), el("dd", "", v))); body.append(dl); }
+  const pager = el("div", "pager");
+  const prev = el("button", "btn ghost", "Previous"), next = el("button", "btn ghost", "Next character");
+  prev.type = next.type = "button";
+  prev.onclick = () => showCharacter(currentChar - 1); next.onclick = () => showCharacter(currentChar + 1);
+  pager.append(prev, next); body.append(pager);
+  detail.append(left, body); restart(detail);
+}
+CHARACTERS.forEach((c, i) => {
+  const b = el("button", "card"); b.type = "button"; b.setAttribute("aria-pressed", "false");
+  b.append(media(c, "thumb"), el("div", "label", `<b>${c.name}</b><span>${c.role}</span>`));
+  b.addEventListener("click", () => showCharacter(i));
+  if (!isTouch) {
+    b.addEventListener("pointermove", e => {
+      if (reduced()) return;
+      const r = b.getBoundingClientRect(), px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+      b.style.setProperty("--ry", ((px - .5) * 14) + "deg"); b.style.setProperty("--rx", ((.5 - py) * 14) + "deg");
+      b.style.setProperty("--gx", px * 100 + "%"); b.style.setProperty("--gy", py * 100 + "%");
+    });
+    b.addEventListener("pointerleave", () => { b.style.setProperty("--rx", "0deg"); b.style.setProperty("--ry", "0deg"); });
+  }
+  cast.append(b);
+});
+showCharacter(0);
+
+/* =========================================================
+   WORLD REEL + LIGHTBOX
+   ========================================================= */
+const reel = $("#reel"), worldMedia = [];
+WORLD.forEach((w, idx) => {
+  const fig = el("figure", "loc"); fig.tabIndex = 0; fig.setAttribute("role", "button"); fig.setAttribute("aria-label", `Open ${w.name} full screen`);
+  let m;
+  if (w.img) { m = el("img"); m.src = w.img; m.alt = w.name; m.loading = "lazy"; }
+  else {
+    m = el("canvas"); m.width = 1280; m.height = 720; m.setAttribute("role", "img"); m.setAttribute("aria-label", `${w.name}, frame from the film`);
+    onceVisible(fig, () => grab(w.t, m, 1280).then(ok => ok && m.classList.add("ready")), "600px");
+  }
+  worldMedia[idx] = m;
+  fig.append(m, el("figcaption", "", `<b>${w.name}</b><span>${w.note}</span>`));
+  fig.addEventListener("click", () => { if (!reel.moved) openLb(idx); });
+  fig.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); openLb(idx); } });
+  reel.append(fig);
+});
+const step = () => (reel.firstElementChild ? reel.firstElementChild.offsetWidth + 16 : 600);
+$("#reelPrev").onclick = () => reel.scrollBy({ left: -step(), behavior: "smooth" });
+$("#reelNext").onclick = () => reel.scrollBy({ left: step(), behavior: "smooth" });
+/* drag to scroll (mouse) */
+let dragX = null, startL = 0;
+reel.addEventListener("pointerdown", e => { if (e.pointerType !== "mouse") return; dragX = e.clientX; startL = reel.scrollLeft; reel.moved = false; });
+addEventListener("pointermove", e => {
+  if (dragX === null) return;
+  const dx = e.clientX - dragX;
+  if (Math.abs(dx) > 5) { reel.moved = true; reel.classList.add("drag"); }
+  if (reel.moved) reel.scrollLeft = startL - dx;
+});
+addEventListener("pointerup", () => { if (dragX === null) return; dragX = null; reel.classList.remove("drag"); setTimeout(() => (reel.moved = false), 0); });
+
+const lb = $("#lb"), lbCv = $("#lbCanvas"); let lbIdx = 0, lbFocus = null;
+function drawLb() {
+  const m = worldMedia[lbIdx], w = WORLD[lbIdx];
+  const sw = m.naturalWidth || m.width, sh = m.naturalHeight || m.height;
+  lbCv.width = sw; lbCv.height = sh; lbCv.getContext("2d").drawImage(m, 0, 0, sw, sh);
+  $("#lbT").textContent = w.name; $("#lbD").textContent = w.note;
+}
+function openLb(i) { lbIdx = i; lbFocus = document.activeElement; drawLb(); lb.classList.add("open"); html.classList.add("lock"); $("#lbX").focus(); }
+function closeLb() { if (!lb.classList.contains("open")) return; lb.classList.remove("open"); html.classList.remove("lock"); if (lbFocus) lbFocus.focus(); }
+function stepLb(d) { lbIdx = (lbIdx + d + WORLD.length) % WORLD.length; drawLb(); }
+$("#lbX").onclick = closeLb; $("#lbP").onclick = () => stepLb(-1); $("#lbN").onclick = () => stepLb(1);
+lb.addEventListener("click", e => { if (e.target === lb) closeLb(); });
+addEventListener("keydown", e => {
+  if (e.key === "Escape") { closeLb(); if (document.body.classList.contains("theatre")) { theatre(false); film.pause(); } }
+  if (lb.classList.contains("open")) { if (e.key === "ArrowRight") stepLb(1); if (e.key === "ArrowLeft") stepLb(-1); }
+});
+
+/* =========================================================
+   TIMELINE
+   ========================================================= */
+const tl = $("#tl"), tlScroll = $("#tlScroll"), scrub = $("#scrub"), sceneCv = $("#sceneCanvas");
+let activeScene = -1;
+SCENES.forEach((s, i) => {
+  const b = el("button", "tl-btn", `<span class="tl-thumb"><canvas width="320" height="180"></canvas></span><span class="t">${fmt(s.t)}</span><span class="n">${s.name}</span>`);
+  b.type = "button"; b.setAttribute("role", "tab"); b.setAttribute("aria-selected", "false");
+  b.addEventListener("click", () => { follow = false; selectScene(i); });
+  b.addEventListener("keydown", e => {
+    let n = i;
+    if (e.key === "ArrowRight") n = (i + 1) % SCENES.length; else if (e.key === "ArrowLeft") n = (i - 1 + SCENES.length) % SCENES.length; else return;
+    e.preventDefault(); tl.children[n].focus(); follow = false; selectScene(n);
+  });
+  tl.append(b);
+  const tick = el("i"); tick.style.left = (s.t / FILM.duration * 100) + "%"; scrub.append(tick);
+});
+onceVisible(tl, () => { $$("canvas", tl).forEach((cv, i) => grab(SCENES[i].t + 0.5, cv, 320).then(ok => ok && cv.classList.add("ready"))); }, "400px");
+
+function selectScene(i, instant) {
+  if (i === activeScene) return;
+  activeScene = i; const s = SCENES[i];
+  [...tl.children].forEach((b, k) => { b.setAttribute("aria-selected", k === i); b.tabIndex = k === i ? 0 : -1; });
+  $("#sceneStamp").textContent = fmt(s.t); $("#sceneTitle").textContent = s.name; $("#sceneText").textContent = s.text;
+  restart($("#sceneBody"));
+  sceneCv.classList.add("fade");
+  grab(s.t + 0.5, sceneCv, 1280).then(() => setTimeout(() => sceneCv.classList.remove("fade"), 30));
+  const b = tl.children[i];
+  tlScroll.scrollTo({ left: b.offsetLeft - (tlScroll.clientWidth - b.offsetWidth) / 2, behavior: instant || reduced() ? "auto" : "smooth" });
+}
+$("#sceneGo").addEventListener("click", () => {
+  film.currentTime = SCENES[activeScene].t; follow = true;
+  player.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "center" }); film.play().catch(() => {});
+});
+selectScene(0, true);
+
+/* Scrub bar: click, drag, or use arrow keys */
+function seekTo(clientX) {
+  const r = scrub.getBoundingClientRect(), p = clamp((clientX - r.left) / r.width, 0, 1);
+  const t = p * (film.duration || FILM.duration); film.currentTime = t; syncTime(t); follow = false; selectScene(sceneAt(t));
+}
+let scrubbing = false;
+scrub.addEventListener("pointerdown", e => { scrubbing = true; scrub.setPointerCapture(e.pointerId); seekTo(e.clientX); });
+scrub.addEventListener("pointermove", e => { if (scrubbing) seekTo(e.clientX); });
+scrub.addEventListener("pointerup", () => (scrubbing = false));
+scrub.addEventListener("keydown", e => {
+  const d = e.key === "ArrowRight" ? 5 : e.key === "ArrowLeft" ? -5 : 0; if (!d) return; e.preventDefault();
+  const t = clamp(film.currentTime + d, 0, film.duration || FILM.duration); film.currentTime = t; syncTime(t); selectScene(sceneAt(t));
+});
+function syncTime(t) {
+  const pct = clamp(t / FILM.duration, 0, 1) * 100;
+  $("#scrubFill").style.width = pct + "%"; $("#scrubKnob").style.left = pct + "%";
+  scrub.setAttribute("aria-valuenow", Math.round(t)); scrub.setAttribute("aria-valuetext", fmt(t));
+  $("#tcNow").textContent = fmt(t);
+  const i = sceneAt(t); $("#nowScene").textContent = SCENES[i].name;
+  [...tl.children].forEach((b, k) => b.classList.toggle("playing", k === i && !film.paused));
+  return i;
+}
+film.addEventListener("timeupdate", () => { const i = syncTime(film.currentTime); if (follow && !film.paused) selectScene(i); });
+film.addEventListener("pause", () => $$(".tl-btn").forEach(b => b.classList.remove("playing")));
+
+/* =========================================================
+   WORKFLOW — stages light up in order
+   ========================================================= */
+const pipeItems = $$("#pipe li");
+onceVisible($("#pipe"), () => pipeItems.forEach((li, i) => setTimeout(() => li.classList.add("on"), reduced() ? 0 : i * 420)), "-10%");
+
+/* =========================================================
+   PROMPTS
+   ========================================================= */
+const ptabs = $("#promptTabs"), pbody = $("#promptBody"), pbox = $("#promptBox");
+let typer = null, activePrompt = 0;
+PROMPTS.forEach((p, i) => {
+  const b = el("button", "tab", p.tab); b.type = "button"; b.setAttribute("role", "tab");
+  b.addEventListener("click", () => showPrompt(i)); ptabs.append(b);
+});
+const copyBtn = el("button", "copy", "Copy prompt"); copyBtn.type = "button";
+copyBtn.onclick = () => { navigator.clipboard && navigator.clipboard.writeText(PROMPTS[activePrompt].text).then(() => { copyBtn.textContent = "Copied"; setTimeout(() => (copyBtn.textContent = "Copy prompt"), 1500); }); };
+ptabs.append(copyBtn);
+function showPrompt(i, tag) {
+  activePrompt = i; clearInterval(typer);
+  [...ptabs.querySelectorAll(".tab")].forEach((b, k) => b.setAttribute("aria-selected", k === i));
+  const p = PROMPTS[i]; pbody.innerHTML = ""; pbox.classList.remove("focus");
+  if (p.rows) {
+    p.rows.forEach((r, k) => { const row = el("div", "prow", `<b>${r.k}</b><span></span>`); row.dataset.tag = r.tag; row.style.setProperty("--i", k); $("span", row).textContent = r.v; pbody.append(row); });
+    if (tag) highlight(tag);
+  } else {
+    const pre = el("p", "plain"); pbody.append(pre);
+    if (reduced()) { pre.textContent = p.text; pre.classList.add("done"); }
+    else { let n = 0; typer = setInterval(() => { n += 2; pre.textContent = p.text.slice(0, n); if (n >= p.text.length) { clearInterval(typer); pre.classList.add("done"); } }, 12); }
+  }
+  $("#promptNote").textContent = p.note;
+}
+function highlight(tag) {
+  pbox.classList.add("focus");
+  $$(".prow", pbody).forEach(r => r.classList.toggle("hl", r.dataset.tag === tag));
+}
+$$(".gain").forEach(g => g.addEventListener("click", () => { if (activePrompt !== 2) showPrompt(2, g.dataset.tag); else highlight(g.dataset.tag); }));
+showPrompt(0);
+
+/* =========================================================
+   PROBLEMS & FIXES (animated accordion)
+   ========================================================= */
+FIXES.forEach((f, i) => {
+  const d = el("div", "fix rv");
+  const id = "fix" + i;
+  d.innerHTML = `<button class="fix-h" type="button" aria-expanded="false" aria-controls="${id}">${f.p}</button>
+    <div class="fix-panel" id="${id}" role="region"><div class="fix-clip"><div class="fix-body">
+      <div><h4>What happened</h4><p>${f.why}</p></div><div class="ok"><h4>How it was fixed</h4><p>${f.fix}</p></div>
+    </div></div></div>`;
+  const btn = $(".fix-h", d);
+  btn.addEventListener("click", () => { const open = d.classList.toggle("open"); btn.setAttribute("aria-expanded", open); });
+  $("#fixes").append(d);
+});
+
+/* =========================================================
+   REVEAL ON SCROLL
+   ========================================================= */
+$$(".rv").forEach((n, i) => n.style.setProperty("--d", (i % 5) * 0.07 + "s"));
+const rvIO = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); rvIO.unobserve(e.target); } }), { threshold: .12, rootMargin: "0px 0px -6% 0px" });
+$$(".rv").forEach(n => rvIO.observe(n));
+
+/* =========================================================
+   SCROLL HANDLER: progress, header, scrollspy, hero fade, story, credits
+   ========================================================= */
+const header = $("#header"), progress = $("#progress");
+const navLinks = $$("#nav a"), spySections = navLinks.map(a => $(a.getAttribute("href")));
+const rollRows = $$(".roll .row");
+let ticking = false;
+function onScroll() {
+  ticking = false;
+  const y = scrollY, max = document.documentElement.scrollHeight - innerHeight;
+  progress.style.transform = `scaleX(${max > 0 ? y / max : 0})`;
+  header.classList.toggle("scrolled", y > 40);
+  let cur = -1; spySections.forEach((s, i) => { if (s && s.getBoundingClientRect().top < innerHeight * .4) cur = i; });
+  navLinks.forEach((a, i) => a.setAttribute("aria-current", i === cur));
+  heroWrap.style.opacity = reduced() ? 1 : clamp(1 - y / (innerHeight * .75), 0, 1);
+  updateLead();
+  rollRows.forEach(r => {
+    if (reduced()) { r.style.opacity = 1; return; }
+    const b = r.getBoundingClientRect(), d = Math.abs(b.top + b.height / 2 - innerHeight / 2) / (innerHeight * .5);
+    r.style.opacity = clamp(1.25 - d, .12, 1);
+  });
+}
+addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } }, { passive: true });
+addEventListener("resize", onScroll);
+onScroll();
+</script>
+</body>
+</html>
